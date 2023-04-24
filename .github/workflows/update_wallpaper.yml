@@ -39,63 +39,51 @@ jobs:
     - name: Update README
       run: |
         README_FILE="README.md"
-        WALLPAPERS_START_TAG="<!-- BING_WALLPAPERS_START -->"
-        WALLPAPERS_END_TAG="<!-- BING_WALLPAPERS_END -->"
         OLD_WALLPAPERS_DIR="old_wallpapers"
 
         # 移动旧的壁纸到 old_wallpapers 文件夹中，并根据壁纸的日期创建年/月/日子文件夹
-        while read -r line; do
-          if [[ $line =~ "img src" ]]; then
-            wallpaper_url=$(echo $line | sed -n 's/.*src="\([^"]*\)".*/\1/p')
-            wallpaper_filename=$(basename $wallpaper_url)
-            wallpaper_date=$(echo $line | sed -n 's/.*<br>\([^<]*\) - .*/\1/p')
-            wallpaper_date_path=$(date -d $wallpaper_date +%Y/%m/%d)
-            mkdir -p $OLD_WALLPAPERS_DIR/$wallpaper_date_path
-            wget $wallpaper_url -O $OLD_WALLPAPERS_DIR/$wallpaper_date_path/$wallpaper_filename
-          fi
-        done < <(sed -n "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/p" $README_FILE)
-
-        # 删除旧的壁纸部分以及起始和结束标签
-        sed -i "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/d" $README_FILE
+        grep -Eo 'src="[^"]+' $README_FILE | cut -d'"' -f2 | while read -r wallpaper_url; do
+          wallpaper_filename=$(basename $wallpaper_url)
+          wallpaper_date=$(grep -Eo "$wallpaper_url.+<br>([^<]+)" $README_FILE | cut -d'<' -f1 | cut -d'>' -f2)
+          wallpaper_date_path=$(date -d $wallpaper_date +%Y/%m/%d)
+          mkdir -p $OLD_WALLPAPERS_DIR/$wallpaper_date_path
+          wget $wallpaper_url -O $OLD_WALLPAPERS_DIR/$wallpaper_date_path/$wallpaper_filename
+          # 从README.md中删除旧壁纸
+          sed -i "/$wallpaper_url/d" $README_FILE
+        done
 
         # 按日期降序排序
         jq -s 'sort_by(.enddate) | reverse' wallpapers.json > sorted_wallpapers.json
 
         # 添加新的壁纸
-        echo $WALLPAPERS_START_TAG > temp.md
         index=0
         while read -r line; do
           wallpaper_url="https://www.bing.com$(echo $line | jq -r '.url')"
           wallpaper_name="$(echo $line | jq -r '.copyright')"
           wallpaper_date="$(echo $line | jq -r '.enddate')"
           if [ $index -eq 0 ]; then
-            echo "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"100\"><br>$wallpaper_date - $wallpaper_name<br><br>" >> temp.md
+            echo "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"100\"><br>$wallpaper_date - $wallpaper_name<br><br>" >> $README_FILE
           else
             if (( $index % 3 == 1 )); then
-              echo -n "<div>" >> temp.md
+              echo -n "<div>" >> $README_FILE
             fi
-            echo -n "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"400\"><br>$wallpaper_date - $wallpaper_name" >> temp.md
+            echo -n "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"400\"><br>$wallpaper_date - $wallpaper_name" >> $README_FILE
             if (( $index % 3 == 0 )); then
-              echo "</div>" >> temp.md
+              echo "</div>" >> $README_FILE
             else
-              echo -n "<br><br>" >> temp.md
+              echo -n "<br><br>" >> $README_FILE
             fi
           fi
           index=$((index+1))
-        done < sorted_wallpapers.json
+        done < <(jq -c '.[]' sorted_wallpapers.json)
 
         # 添加一个闭合标签，以防壁纸数量不是3的倍数
         if (( $index % 3 != 1 )); then
-          echo "</div>" >> temp.md
+          echo "</div>" >> $README_FILE
         fi
 
-        echo $WALLPAPERS_END_TAG >> temp.md
-
-        # 将新的壁纸部分添加到README文件
-        cat temp.md >> $README_FILE
-
         # 删除临时文件
-        rm temp.md wallpapers.json sorted_wallpapers.json
+        rm sorted_wallpapers.json
 
     - name: Remove duplicates from README.md
       run: |
