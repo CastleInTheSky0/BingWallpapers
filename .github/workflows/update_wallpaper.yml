@@ -55,8 +55,8 @@ jobs:
           fi
         done < <(sed -n "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/p" $README_FILE)
 
-        # 删除旧的壁纸部分
-        sed -i "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/{//!d}" $README_FILE
+        # 删除旧的壁纸部分，保留起始和结束标签
+        sed -i "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/{//!d; /$WALLPAPERS_START_TAG/!d; /$WALLPAPERS_END_TAG/!d}" $README_FILE
 
         # 添加新的壁纸
         echo $WALLPAPERS_START_TAG > temp.md
@@ -64,7 +64,7 @@ jobs:
           wallpaper_url="https://www.bing.com$(echo $line | jq -r '.url')"
           wallpaper_name="$(echo $line | jq -r '.copyright')"
           wallpaper_date="$(echo $line | jq -r '.enddate')"
-          echo "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"300\"><br>$wallpaper_date - $wallpaper_name<br><br>" >> temp.md
+          echo "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"400\"><br>$wallpaper_date - $wallpaper_name<br><br>" >> temp.md
         done < wallpapers.json
         echo $WALLPAPERS_END_TAG >> temp.md
 
