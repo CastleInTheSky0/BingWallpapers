@@ -59,7 +59,7 @@ jobs:
         sed -i "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/{//!d}" $README_FILE
 
         # 添加新的壁纸
-        echo $WALLPAPERS_START_TAG >> temp.md
+        echo $WALLPAPERS_START_TAG > temp.md
         while read -r line; do
           wallpaper_url="https://www.bing.com$(echo $line | jq -r '.url')"
           wallpaper_name="$(echo $line | jq -r '.copyright')"
