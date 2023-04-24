@@ -40,15 +40,15 @@ jobs:
 
     - name: Update README
       run: |
+        README_FILE="README.md"
+        OLD_WALLPAPERS_DIR="old_wallpapers"
+
         # 获取首图
         first_image=$(sed -n '1p' $README_FILE)
         first_image_date=$(grep -Eo "$first_image.+<br>([^<]+)" $README_FILE | cut -d'<' -f1 | cut -d'>' -f2)
 
         # 移除首图
         sed -i '1d' $README_FILE
-
-        README_FILE="README.md"
-        OLD_WALLPAPERS_DIR="old_wallpapers"
 
         # 移动旧的壁纸到 old_wallpapers 文件夹中，并根据壁纸的日期创建年/月/日子文件夹
         grep -Eo 'src="[^"]+' $README_FILE | cut -d'"' -f2 | while read -r wallpaper_url; do
