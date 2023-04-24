@@ -64,15 +64,13 @@ jobs:
         # 删除临时文件
         rm temp.md wallpapers.json
 
-    - name: Clone repository
-      run: |
-        git clone https://github.com/linmew/bingWallpapers.git cloned_repo
-
     - name: Commit and push changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        cd cloned_repo
         git config user.name "linmew"
         git config user.email "jzgflm@gmail.com"
+        git remote set-url origin https://$GITHUB_TOKEN@github.com/yourusername/yourrepository.git
         git add README.md
         git commit -m "Update Bing Wallpapers"
         git push
