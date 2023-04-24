@@ -39,14 +39,21 @@ def update_readme(image_url, image_date, image_caption):
     new_image = soup.new_tag("img", src=image_url, width="100%")
     header.clear()
     header.append(new_image)
+    header_caption = soup.new_tag("p")
+    header_caption.string = f"{image_date} - {image_caption}"
+    header.append(header_caption)
 
     cells = table.find_all("td")
     if cells:
         prev_image = cells[-1].img.extract()
+        prev_caption = cells[-1].p.extract()
         for i in range(len(cells) - 1, 0, -1):
             curr_image = cells[i - 1].img.extract()
+            curr_caption = cells[i - 1].p.extract()
             cells[i].append(curr_image)
+            cells[i].append(curr_caption)
         cells[0].insert(0, prev_image)
+        cells[0].insert(1, prev_caption)
     else:
         new_row = soup.new_tag("tr")
         for _ in range(3):
@@ -56,6 +63,7 @@ def update_readme(image_url, image_date, image_caption):
 
     if len(cells) >= 30:
         last_image = cells[-1].img.extract()
+        last_caption = cells[-1].p.extract()
         last_image_date = last_image["src"].split("/")[-1].split("_")[0]
         if not os.path.exists(f"old_wallpapers/{last_image_date}"):
             os.makedirs(f"old_wallpapers/{last_image_date}")
