@@ -21,13 +21,30 @@ jobs:
       run: |
         for i in {0..29}; do
           wallpaper_info=$(curl -sL "https://www.bing.com/HPImageArchive.aspx?format=js&idx=$i&n=1&mkt=en-US" | jq -c '.images[0]')
-          echo $wallpaper_info >> wallpapers.json
+          wallpaper_url="https://www.bing.com$(echo $wallpaper_info | jq -r '.url')"
+          # 检查 README.md 是否已经包含了这个壁纸的 URL
+          if ! grep -q "$wallpaper_url" README.md; then
+            echo $wallpaper_info >> wallpapers.json
+          fi
         done
 
     - name: Create old_wallpapers folder
       run: |
         mkdir -p old_wallpapers
 
+    - name: Remove duplicates from README.md
+      run: |
+        README_FILE="README.md"
+        WALLPAPERS_START_TAG="<!-- BING_WALLPAPERS_START -->"
+        WALLPAPERS_END_TAG="<!-- BING_WALLPAPERS_END -->"
+        
+        sed -n "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/p" $README_FILE > wallpapers_section.md
+        awk '!seen[$0]++' wallpapers_section.md > wallpapers_section_deduplicated.md
+        
+        sed -i "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/{//!d}" $README_FILE
+        sed -i "/$WALLPAPERS_START_TAG/r wallpapers_section_deduplicated.md" $README_FILE
+        
+        rm wallpapers_section.md wallpapers_section_deduplicated.md
 
     - name: Update README
       run: |
@@ -79,5 +96,3 @@ jobs:
         git commit -m "Update Bing Wallpapers"
         git push
         rm -f private_key.pem
-
-
