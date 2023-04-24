@@ -1,5 +1,6 @@
 import os
 import requests
+import re
 from bs4 import BeautifulSoup
 from datetime import datetime
 
@@ -35,7 +36,8 @@ def update_readme(image_url, image_date, image_caption):
     # Save the image with a new name format and original extension
     image_response = requests.get(image_url)
     image_extension = os.path.splitext(image_url)[-1]
-    new_image_name = f"{image_date} {image_caption}{image_extension}"
+    safe_image_caption = re.sub(r"[^\w\s]", "_", image_caption)  # Replace special characters with underscores
+    new_image_name = f"{image_date} {safe_image_caption}{image_extension}"
     with open(new_image_name, "wb") as f:
         f.write(image_response.content)
 
