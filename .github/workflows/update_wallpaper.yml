@@ -19,7 +19,7 @@ jobs:
 
     - name: Create wallpapers.json file
       run: |
-        touch wallpapers.json
+        echo '[]' > wallpapers.json
 
     - name: Get Bing Wallpapers
       run: |
@@ -61,18 +61,18 @@ jobs:
             WALLPAPER_URL="https://www.bing.com$(echo $line | jq -r '.url')"
             WALLPAPER_NAME="$(echo $line | jq -r '.copyright')"
             WALLPAPER_DATE="$(echo $line | jq -r '.enddate')"
-            WALLPAPER_HTML="<td><img src=\"$WALLPAPER_URL\" alt=\"$WALLPAPER_NAME\" width=\"100%\"><br>$WALLPAPER_DATE - $WALLPAPER_NAME</td>"
+            WALLPAPER_HTML="<td><img src=\"$WALLPAPER_URL\" alt=\"$WALLPAPER_NAME\" width=\"33%\"><br>$WALLPAPER_DATE - $WALLPAPER_NAME</td>"
             if (( $INDEX % 3 == 1 )); then
               WALLPAPER_HTML="<tr>$WALLPAPER_HTML"
             elif (( $INDEX % 3 == 0 )); then
-              WALLPAPER_HTML="$WALLPAPER_HTML</tr>"
+              WALLPAPER_HTML="$WALLPAPER_HTML</            WALLPAPER_HTML="$WALLPAPER_HTML</tr>"
             fi
             # 如果壁纸数量超过 30，将旧壁纸移动到 old_wallpapers 文件夹
             if [ $COUNT -gt 30 ]; then
               OLDEST_WALLPAPER=$(grep -m 1 '<td>' $README_FILE)
               OLDEST_WALLPAPER_URL=$(echo $OLDEST_WALLPAPER | grep -Eo 'src="[^"]+' | cut -d'"' -f2)
               OLDEST_WALLPAPER_DATE=$(echo $OLDEST_WALLPAPER | grep -Eo "<br>([^<]+)" | cut -d'<' -f1 | cut -d'>' -f2)
-              OLDEST_WALLPAPER_PATH=$(date -d $OLDEST_WALLPAPER_DATE+%Y/%m/%d)
+              OLDEST_WALLPAPER_PATH=$(date -d $OLDEST_WALLPAPER_DATE +%Y/%m/%d)
               mkdir -p $OLD_WALLPAPERS_DIR/$OLDEST_WALLPAPER_PATH
               wget $OLDEST_WALLPAPER_URL -O $OLD_WALLPAPERS_DIR/$OLDEST_WALLPAPER_PATH/$(basename $OLDEST_WALLPAPER_URL)
               # 从README.md中删除旧壁纸
@@ -82,11 +82,11 @@ jobs:
             # 将更新的壁纸插入表格中
             sed -i "/<\/table>/i $WALLPAPER_HTML" $README_FILE
             INDEX=$((INDEX+1))
-            done < <(jq -c '.[]' sorted_wallpapers.json)
+          done < <(jq -c '.[]' sorted_wallpapers.json)
 
-            # 删除临时文件
-            rm sorted_wallpapers.json
-          fi
+          # 删除临时文件
+          rm sorted_wallpapers.json
+        fi
 
     - name: Commit and push changes
       env:
@@ -100,6 +100,8 @@ jobs:
         git config --global user.email "jzgflm@gmail.com"
         git remote set-url origin git@github.com:linmew/bingWallpapers.git
         git add README.md
+        git add old_wallpapers
         git commit -m "Update Bing Wallpapers"
         git push
         rm -f private_key.pem
+
