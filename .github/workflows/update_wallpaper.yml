@@ -24,12 +24,14 @@ jobs:
     - name: Get Bing Wallpapers
       run: |
         for i in {0..29}; do
-          wallpaper_info=$(curl -sL "https://www.bing.com/HPImageArchive.aspx?format=js&idx=$i&n=1&mkt=en-US" | jq -c '.images[0]')
-          wallpaper_url="https://www.bing.com$(echo $wallpaper_info | jq -r '.url')"
-          wallpaper_enddate="$(echo $wallpaper_info | jq -r '.enddate')"
-          # 检查 README.md 是否已经包含了这个壁纸的 URL，以及 enddate 是否存在
-          if ! grep -q "$wallpaper_url" README.md && [ "$wallpaper_enddate" != "null" ] && [ ! -z "$wallpaper_enddate" ]; then
-            echo $wallpaper_info >> wallpapers.json
+          wallpaper_info=$(curl -sL "https://www.bing.com/HPImageArchive.aspx?format=js&idx=$i&n=1&mkt=en-US" | jq -c 'select(.images[0].enddate != null and .images[0].enddate != "") | .images[0]')
+          if [ "$wallpaper_info" != "" ]; then
+            wallpaper_url="https://www.bing.com$(echo $wallpaper_info | jq -r '.url')"
+            wallpaper_enddate="$(echo $wallpaper_info | jq -r '.enddate')"
+            # 检查 README.md 是否已经包含了这个壁纸的 URL，以及 enddate 是否存在
+            if ! grep -q "$wallpaper_url" README.md && [ "$wallpaper_enddate" != "null" ] && [ ! -z "$wallpaper_enddate" ]; then
+              echo $wallpaper_info >> wallpapers.json
+            fi
           fi
         done
         jq -s 'unique_by(.url)' wallpapers.json > unique_wallpapers.json
