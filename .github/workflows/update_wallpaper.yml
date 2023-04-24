@@ -66,14 +66,18 @@ jobs:
 
     - name: Commit and push changes
       env:
-        MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
-        echo $MY_GITHUB_TOKEN
+        echo "$SSH_PRIVATE_KEY" > private_key.pem
+        chmod 600 private_key.pem
+        eval "$(ssh-agent -s)"
+        ssh-add private_key.pem
         git config --global user.name "linmew"
         git config --global user.email "jzgflm@gmail.com"
-        git remote set-url origin https://$MY_GITHUB_TOKEN@github.com/linmew/bingWallpapers.git
+        git remote set-url origin git@github.com:linmew/bingWallpapers.git
         git add README.md
         git commit -m "Update Bing Wallpapers"
         git push
+        rm -f private_key.pem
 
 
