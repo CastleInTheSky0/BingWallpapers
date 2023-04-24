@@ -55,8 +55,8 @@ jobs:
           fi
         done < <(sed -n "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/p" $README_FILE)
 
-        # 删除旧的壁纸部分，只保留起始和结束标签
-        sed -i "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/{//!d}" $README_FILE
+        # 删除旧的壁纸部分以及起始和结束标签
+        sed -i "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/d" $README_FILE
 
         # 添加新的壁纸
         echo $WALLPAPERS_START_TAG > temp.md
@@ -69,7 +69,9 @@ jobs:
         echo $WALLPAPERS_END_TAG >> temp.md
 
         # 将新的壁纸部分添加到README文件
-        sed -i "/$WALLPAPERS_START_TAG/r temp.md" $README_FILE
+        echo $WALLPAPERS_START_TAG >> $README_FILE
+        cat temp.md >> $README_FILE
+        echo $WALLPAPERS_END_TAG >> $README_FILE
 
         # 删除临时文件
         rm temp.md wallpapers.json
