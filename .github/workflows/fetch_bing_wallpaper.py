@@ -3,6 +3,8 @@ import requests
 import re
 from bs4 import BeautifulSoup
 from datetime import datetime
+from urllib.parse import urlsplit,urlunsplit
+
 
 URL = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US"
 BASE_URL = "https://www.bing.com"
@@ -13,7 +15,13 @@ def fetch_bing_wallpaper():
     image_url = BASE_URL + data["images"][0]["url"]
     image_date = data["images"][0]["enddate"]
     image_caption = data["images"][0]["copyright"]
-    return image_url, image_date, image_caption
+
+    # Remove query parameters from the image URL
+    url_parts = list(urlsplit(image_url))
+    url_parts[3] = ""  # Clear query parameters
+    clean_image_url = urlunsplit(url_parts)
+
+    return clean_image_url, image_date, image_caption
 
 def update_readme(image_url, image_date, image_caption):
     with open("README.md", "r") as f:
