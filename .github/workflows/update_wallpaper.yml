@@ -62,7 +62,7 @@ jobs:
           wallpaper_name="$(echo $line | jq -r '.copyright')"
           wallpaper_date="$(echo $line | jq -r '.enddate')"
           if [ $index -eq 0 ]; then
-            echo "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"100\"><br>$wallpaper_date - $wallpaper_name<br><br>" >> $README_FILE
+            echo "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"100%\"><br>$wallpaper_date - $wallpaper_name<br><br>" >> $README_FILE
           else
             if (( $index % 3 == 1 )); then
               echo -n "<div>" >> $README_FILE
