@@ -99,8 +99,4 @@ jobs:
         git add README.md
         git commit -m "Update Bing Wallpapers"
         git push
-<<<<<<< HEAD
         rm -f private_key.pem
-=======
-        rm -f private_key.pem
->>>>>>> 6507e799db0859890346c423df509232aa993b61
