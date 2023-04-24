@@ -32,9 +32,16 @@ def update_readme(image_url, image_date, image_caption):
     new_row = soup.new_tag("tr")
     new_cell = soup.new_tag("td")
 
-    new_image = soup.new_tag("img", src=image_url, width="300")
+    # Save the image with a new name format and original extension
+    image_response = requests.get(image_url)
+    image_extension = os.path.splitext(image_url)[-1]
+    new_image_name = f"{image_date} {image_caption}{image_extension}"
+    with open(new_image_name, "wb") as f:
+        f.write(image_response.content)
+
+    new_image = soup.new_tag("img", src=new_image_name, width="300")
     new_caption = soup.new_tag("p")
-    new_caption.string = f"{image_caption} ({image_date})"
+    new_caption.string = f"{image_date} {image_caption}"
 
     new_cell.append(new_image)
     new_cell.append(new_caption)
@@ -43,9 +50,10 @@ def update_readme(image_url, image_date, image_caption):
     if len(table.find_all("td")) >= 30:
         last_image = table.find_all("td")[-1].img["src"]
         last_image_date = last_image.split("/")[-1].split("_")[0]
+        last_image_extension = os.path.splitext(last_image)[-1]
         if not os.path.exists(f"old_wallpapers/{last_image_date}"):
             os.makedirs(f"old_wallpapers/{last_image_date}")
-        os.rename(last_image, f"old_wallpapers/{last_image_date}/{last_image_date}.jpg")
+        os.rename(last_image, f"old_wallpapers/{last_image_date}/{last_image_date}{last_image_extension}")
 
     table.insert(0, new_row)
 
