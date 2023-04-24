@@ -24,13 +24,14 @@ jobs:
     - name: Get Bing Wallpapers
       run: |
         for i in {0..29}; do
-          wallpaper_info=$(curl -sL "https://www.bing.com/HPImageArchive.aspx?format=js&idx=$i&n=1&mkt=en-US" | jq -c '.images[0]')
+          wallpaper_info=$(curl -sL "https://www.bing.com/HPImageArchive.aspx?format=js&idx=$i&n=1&mkt=en-US" | jq -c '.images[0] | {url: .url, copyright: .copyright, enddate: .enddate}')
           wallpaper_url="https://www.bing.com$(echo $wallpaper_info | jq -r '.url')"
           # 检查 README.md 是否已经包含了这个壁纸的 URL
           if ! grep -q "$wallpaper_url" README.md; then
             echo $wallpaper_info >> wallpapers.json
           fi
         done
+
 
     - name: Create old_wallpapers folder
       run: |
