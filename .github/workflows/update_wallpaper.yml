@@ -17,6 +17,10 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y jq
 
+    - name: Create wallpapers.json file
+      run: |
+        touch wallpapers.json
+
     - name: Get Bing Wallpapers
       run: |
         for i in {0..29}; do
@@ -27,6 +31,7 @@ jobs:
             echo $wallpaper_info >> wallpapers.json
           fi
         done
+
 
     - name: Create old_wallpapers folder
       run: |
@@ -95,4 +100,8 @@ jobs:
         git add README.md
         git commit -m "Update Bing Wallpapers"
         git push
+<<<<<<< HEAD
         rm -f private_key.pem
+=======
+        rm -f private_key.pem
+>>>>>>> 6507e799db0859890346c423df509232aa993b61
