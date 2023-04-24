@@ -39,56 +39,53 @@ jobs:
     - name: Update README
       run: |
         README_FILE="README.md"
-        WALLPAPERS_START_TAG="<!-- BING_WALLPAPERS_START -->"
-        WALLPAPERS_END_TAG="<!-- BING_WALLPAPERS_END -->"
+        jq -s 'sort_by(.enddate) | reverse' wallpapers.json > sorted_wallpapers.json
+        NEW_WALLPAPER=$(head -n 1 sorted_wallpapers.json | jq -c '.[0]')
         OLD_WALLPAPERS_DIR="old_wallpapers"
 
-        # 移动旧的壁纸到 old_wallpapers 文件夹中，并根据壁纸的日期创建年/月/日子文件夹
+        # 判断是否有新壁纸，如果有则将新壁纸插入到表格的第一个位置
+        if ! grep -q "$(echo $NEW_WALLPAPER | jq -r '.url')" README.md; then
+          NEW_WALLPAPER_HTML="<tr><td><img src=\"https://www.bing.com$(echo $NEW_WALLPAPER | jq -r '.url')\" alt=\"$(echo $NEW_WALLPAPER | jq -r '.copyright')\" width=\"100%\"></td></tr>"
+          sed -i "2s|^|$NEW_WALLPAPER_HTML|" $README_FILE
+        fi
+
+        # 更新表格中的其他壁纸
+        INDEX=0
+        COUNT=$(grep -c '<td>' $README_FILE)
         while read -r line; do
-          if [[ $line =~ "img src" ]]; then
-            wallpaper_url=$(echo $line | sed -n 's/.*src="\([^"]*\)".*/\1/p')
-            wallpaper_filename=$(basename $wallpaper_url)
-            wallpaper_date=$(echo $line | sed -n 's/.*<br>\([^<]*\) - .*/\1/p')
-            wallpaper_date_path=$(date -d $wallpaper_date +%Y/%m/%d)
-            mkdir -p $OLD_WALLPAPERS_DIR/$wallpaper_date_path
-            wget $wallpaper_url -O $OLD_WALLPAPERS_DIR/$wallpaper_date_path/$wallpaper_filename
+          if [ $INDEX -eq 0 ]; then
+            INDEX=$((INDEX+1))
+            continue
           fi
-        done < <(sed -n "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/p" $README_FILE)
+          WALLPAPER_URL="https://www.bing.com$(echo $line | jq -r '.url')"
+          WALLPAPER_NAME="$(echo $line | jq -r '.copyright')"
+          WALLPAPER_DATE="$(echo $line | jq -r '.enddate')"
+          WALLPAPER_HTML="<td><img src=\"$WALLPAPER_URL\" alt=\"$WALLPAPER_NAME\" width=\"100%\"><br>$WALLPAPER_DATE - $WALLPAPER_NAME</td>"
+          if (( $INDEX % 3 == 1 )); then
+            WALLPAPER_HTML="<tr>$WALLPAPER_HTML"
+          elif (( $INDEX % 3 == 0 )); then
+            WALLPAPER_HTML="$WALLPAPER_HTML</tr>"
+          fi
+          # 如果壁纸数量超过 30，将旧壁纸移动到 old_wallpapers 文件夹
+          if [ $COUNT -gt 30 ]; then
+            OLDEST_WALLPAPER=$(grep -m 1 '<td>' $README_FILE)
+            OLDEST_WALLPAPER_URL=$(echo $OLDEST_WALLPAPER | grep -Eo 'src="[^"]+' | cut -d'"' -f2)
+            OLDEST_WALLPAPER_DATE=$(echo $OLDEST_WALLPAPER | grep -Eo "<br>([^<]+)" | cut -d'<' -f1 | cut -d'>' -f2)
+            OLDEST_WALLPAPER_PATH=$(date -d $OLDEST_WALLPAPER_DATE+%Y/%m/%d)
+            mkdir -p $OLD_WALLPAPERS_DIR/$OLDEST_WALLPAPER_PATH
+            wget $OLDEST_WALLPAPER_URL -O $OLD_WALLPAPERS_DIR/$OLDEST_WALLPAPER_PATH/$(basename $OLDEST_WALLPAPER_URL)
+            # 从README.md中删除旧壁纸
+            sed -i "/$(basename $OLDEST_WALLPAPER_URL)/d" $README_FILE
+            COUNT=$((COUNT-1))
+          fi
 
-        # 删除旧的壁纸部分以及起始和结束标签
-        sed -i "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/d" $README_FILE
-
-        # 添加新的壁纸
-        echo $WALLPAPERS_START_TAG > temp.md
-        while read -r line; do
-          wallpaper_url="https://www.bing.com$(echo $line | jq -r '.url')"
-          wallpaper_name="$(echo $line | jq -r '.copyright')"
-          wallpaper_date="$(echo $line | jq -r '.enddate')"
-          echo "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"400\"><br>$wallpaper_date - $wallpaper_name<br><br>" >> temp.md
-        done < wallpapers.json
-        echo $WALLPAPERS_END_TAG >> temp.md
-
-        # 将新的壁纸部分添加到README文件
-        echo $WALLPAPERS_START_TAG >> $README_FILE
-        cat temp.md >> $README_FILE
-        echo $WALLPAPERS_END_TAG >> $README_FILE
+          # 将更新的壁纸插入表格中
+          sed -i "/<\/table>/i $WALLPAPER_HTML" $README_FILE
+          INDEX=$((INDEX+1))
+        done < <(jq -c '.[]' sorted_wallpapers.json)
 
         # 删除临时文件
-        rm temp.md wallpapers.json
-
-    - name: Remove duplicates from README.md
-      run: |
-        README_FILE="README.md"
-        WALLPAPERS_START_TAG="<!-- BING_WALLPAPERS_START -->"
-                WALLPAPERS_END_TAG="<!-- BING_WALLPAPERS_END -->"
-
-        sed -n "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/p" $README_FILE > wallpapers_section.md
-        awk '!seen[$0]++' wallpapers_section.md > wallpapers_section_deduplicated.md
-
-        sed -i "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/{//!d}" $README_FILE
-        sed -i "/$WALLPAPERS_START_TAG/r wallpapers_section_deduplicated.md" $README_FILE
-
-        rm wallpapers_section.md wallpapers_section_deduplicated.md
+        rm sorted_wallpapers.json
 
     - name: Commit and push changes
       env:
