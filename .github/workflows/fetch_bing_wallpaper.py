@@ -43,8 +43,6 @@ def update_readme(image_url, image_date, image_caption):
     if len(table.find_all("td")) >= 30:
         last_image = table.find_all("td")[-1].img["src"]
         last_image_date = last_image.split("/")[-1].split("_")[0]
-        if not os.path.exists(f"old_wallpapers"):
-            os.makedirs(f"old_wallpapers")
         if not os.path.exists(f"old_wallpapers/{last_image_date}"):
             os.makedirs(f"old_wallpapers/{last_image_date}")
         os.rename(last_image, f"old_wallpapers/{last_image_date}/{last_image_date}.jpg")
