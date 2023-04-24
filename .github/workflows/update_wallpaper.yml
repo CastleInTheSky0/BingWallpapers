@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install dependencies
       run: |
@@ -66,8 +66,8 @@ jobs:
 
     - name: Commit and push changes
       run: |
-        git config --global user.name "GitHub Actions Bot"
-        git config --global user.email "<YOUR-GITHUB-EMAIL>"
+        git config --global user.name "linmew"
+        git config --global user.email "jzgflm@gmail.com"
         git add README.md
         git commit -m "Update Bing Wallpapers"
         git push
