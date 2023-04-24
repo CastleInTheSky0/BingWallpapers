@@ -1,0 +1,72 @@
+name: Update Bing Wallpapers
+
+on:
+  schedule:
+    - cron: "0 * * * *" # 每小时运行一次，您可以根据需要调整此值
+
+jobs:
+  update_wallpapers:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq
+
+    - name: Get Bing Wallpapers
+      run: |
+        for i in {0..29}; do
+          wallpaper_info=$(curl -sL "https://www.bing.com/HPImageArchive.aspx?format=js&idx=$i&n=1&mkt=en-US" | jq -c '.images[0]')
+          echo $wallpaper_info >> wallpapers.json
+        done
+
+    - name: Create old_wallpapers folder
+      run: |
+        mkdir -p old_wallpapers
+
+
+    - name: Update README
+      run: |
+        README_FILE="README.md"
+        WALLPAPERS_START_TAG="<!-- BING_WALLPAPERS_START -->"
+        WALLPAPERS_END_TAG="<!-- BING_WALLPAPERS_END -->"
+        OLD_WALLPAPERS_DIR="old_wallpapers"
+
+        # 移动旧的壁纸到 old_wallpapers 文件夹中
+        while read -r line; do
+          if [[ $line =~ "img src" ]]; then
+            wallpaper_url=$(echo $line | sed -n 's/.*src="\([^"]*\)".*/\1/p')
+            wallpaper_filename=$(basename $wallpaper_url)
+            wget $wallpaper_url -O $OLD_WALLPAPERS_DIR/$wallpaper_filename
+          fi
+        done < <(sed -n "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/p" $README_FILE)
+
+        # 删除旧的壁纸部分
+        sed -i "/$WALLPAPERS_START_TAG/,/$WALLPAPERS_END_TAG/{//!d}" $README_FILE
+
+        # 添加新的壁纸
+        echo $WALLPAPERS_START_TAG >> temp.md
+        while read -r line; do
+          wallpaper_url="https://www.bing.com$(echo $line | jq -r '.url')"
+          wallpaper_name="$(echo $line | jq -r '.copyright')"
+          wallpaper_date="$(echo $line | jq -r '.enddate')"
+          echo "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"300\"><br>$wallpaper_date - $wallpaper_name<br><br>" >> temp.md
+        done < wallpapers.json
+        echo $WALLPAPERS_END_TAG >> temp.md
+
+        # 将新的壁纸部分添加到README文件
+        sed -i "/$WALLPAPERS_START_TAG/r temp.md" $README_FILE
+
+        # 删除临时文件
+        rm temp.md wallpapers.json
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "<YOUR-GITHUB-EMAIL>"
+        git add README.md
+        git commit -m "Update Bing Wallpapers"
+        git push

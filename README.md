@@ -1,2 +1,2 @@
-# bingWallpapers
-get bing daily Wallpapers
+<!-- BING_WALLPAPERS_START -->
+<!-- BING_WALLPAPERS_END -->
