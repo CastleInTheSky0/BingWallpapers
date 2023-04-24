@@ -32,7 +32,6 @@ jobs:
           fi
         done
 
-
     - name: Create old_wallpapers folder
       run: |
         mkdir -p old_wallpapers
