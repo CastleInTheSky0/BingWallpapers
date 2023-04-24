@@ -64,10 +64,14 @@ jobs:
         # 删除临时文件
         rm temp.md wallpapers.json
 
+    - name: Set up GitHub token
+      run: echo "GH_TOKEN=${{ secrets.GH_PAT }}" >> $GITHUB_ENV
+
     - name: Commit and push changes
       run: |
         git config --global user.name "linmew"
         git config --global user.email "jzgflm@gmail.com"
         git add README.md
         git commit -m "Update Bing Wallpapers"
-        git push
+        git push https://${{ env.GH_TOKEN }}@github.com/linmew/bingWallpapers.git
+
