@@ -1,2 +1,2 @@
-<!-- BING_WALLPAPERS_START -->
-<!-- BING_WALLPAPERS_END -->
+Bing Wallpapers
+<hr/>
