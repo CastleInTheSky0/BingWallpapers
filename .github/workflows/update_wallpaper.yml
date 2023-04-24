@@ -27,7 +27,7 @@ jobs:
           wallpaper_info=$(curl -sL "https://www.bing.com/HPImageArchive.aspx?format=js&idx=$i&n=1&mkt=en-US" | jq -c '.images[0]')
           wallpaper_url="https://www.bing.com$(echo $wallpaper_info | jq -r '.url')"
           # 检查 README.md 是否已经包含了这个壁纸的 URL
-          if ! grep -q "$wallpaper_url" README.md; then
+          if ! grep -q "$wallpaper_url" README.md && [ "$(echo $wallpaper_info | jq -r '.enddate')" != "null" ]; then
             echo $wallpaper_info >> wallpapers.json
           fi
         done
@@ -40,6 +40,13 @@ jobs:
 
     - name: Update README
       run: |
+        # 获取首图
+        first_image=$(sed -n '1p' $README_FILE)
+        first_image_date=$(grep -Eo "$first_image.+<br>([^<]+)" $README_FILE | cut -d'<' -f1 | cut -d'>' -f2)
+
+        # 移除首图
+        sed -i '1d' $README_FILE
+
         README_FILE="README.md"
         OLD_WALLPAPERS_DIR="old_wallpapers"
 
@@ -65,6 +72,9 @@ jobs:
           wallpaper_date="$(echo $line | jq -r '.enddate')"
           if [ $index -eq 0 ]; then
             echo "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" width=\"100%\"><br>$wallpaper_date - $wallpaper_name<br><br>" >> $README_FILE
+          elif [ $index -eq 1 ]; then
+            echo -n "<div>$first_image<br>$first_image_date - $wallpaper_name<br><br>" >> $README_FILE
+            echo -n "<img src=\"$wallpaper_url\" alt=\"$wallpaper_name\" style=\"width: calc(100% / 3);\"><br>$wallpaper_date - $wallpaper_name<br><br>" >> $README_FILE
           else
             if (( $index % 3 == 1 )); then
               echo -n "<div>" >> $README_FILE
