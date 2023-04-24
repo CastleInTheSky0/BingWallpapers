@@ -64,15 +64,17 @@ jobs:
         # 删除临时文件
         rm temp.md wallpapers.json
 
-    - name: Set up GitHub token
-      run: echo "GH_TOKEN=${{ secrets.GH_PAT }}" >> $GITHUB_ENV
+    - name: Clone repository
+      run: |
+        git clone https://github.com/linmew/bingWallpapers.git cloned_repo
 
     - name: Commit and push changes
       run: |
-        git config --global user.name "linmew"
-        git config --global user.email "jzgflm@gmail.com"
+        cd cloned_repo
+        git config user.name "linmew"
+        git config user.email "jzgflm@gmail.com"
         git add README.md
         git commit -m "Update Bing Wallpapers"
-        git push https://x-access-token:${{ env.GH_TOKEN }}@github.com/linmew/bingWallpapers.git
+        git push
 
 
