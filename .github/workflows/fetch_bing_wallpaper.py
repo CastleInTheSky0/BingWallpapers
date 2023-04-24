@@ -29,25 +29,37 @@ def update_readme(image_url, image_date, image_caption):
         if img["src"] == image_url:
             return
 
-    new_row = soup.new_tag("tr")
-    new_cell = soup.new_tag("td")
+    header = table.th
+    if not header:
+        header = soup.new_tag("th", colspan="3")
+        first_row = soup.new_tag("tr")
+        first_row.append(header)
+        table.insert(0, first_row)
 
-    new_image = soup.new_tag("img", src=image_url, width="30%")
-    new_caption = soup.new_tag("p")
-    new_caption.string = f"{image_date} - {image_caption}"
+    new_image = soup.new_tag("img", src=image_url, width="100%")
+    header.clear()
+    header.append(new_image)
 
-    new_cell.append(new_image)
-    new_cell.append(new_caption)
-    new_row.append(new_cell)
+    cells = table.find_all("td")
+    if cells:
+        prev_image = cells[-1].img.extract()
+        for i in range(len(cells) - 1, 0, -1):
+            curr_image = cells[i - 1].img.extract()
+            cells[i].append(curr_image)
+        cells[0].insert(0, prev_image)
+    else:
+        new_row = soup.new_tag("tr")
+        for _ in range(3):
+            new_cell = soup.new_tag("td")
+            new_row.append(new_cell)
+        table.append(new_row)
 
-    if len(table.find_all("td")) >= 30:
-        last_image = table.find_all("td")[-1].img["src"]
-        last_image_date = last_image.split("/")[-1].split("_")[0]
+    if len(cells) >= 30:
+        last_image = cells[-1].img.extract()
+        last_image_date = last_image["src"].split("/")[-1].split("_")[0]
         if not os.path.exists(f"old_wallpapers/{last_image_date}"):
             os.makedirs(f"old_wallpapers/{last_image_date}")
-        os.rename(last_image, f"old_wallpapers/{last_image_date}/{last_image_date}.jpg")
-
-    table.insert(0, new_row)
+        os.rename(last_image["src"], f"old_wallpapers/{last_image_date}/{last_image_date}.jpg")
 
     with open("README.md", "w") as f:
         f.write(str(soup))
