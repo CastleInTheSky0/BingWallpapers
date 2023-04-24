@@ -68,6 +68,7 @@ jobs:
       env:
         MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
       run: |
+        echo $MY_GITHUB_TOKEN
         git config --global user.name "linmew"
         git config --global user.email "jzgflm@gmail.com"
         git remote set-url origin https://$MY_GITHUB_TOKEN@github.com/linmew/bingWallpapers.git
