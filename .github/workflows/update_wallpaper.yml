@@ -29,6 +29,8 @@ jobs:
           python .github/workflows/fetch_bing_wallpaper.py
 
       - name: Commit and push changes
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
