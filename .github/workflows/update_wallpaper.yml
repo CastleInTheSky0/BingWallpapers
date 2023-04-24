@@ -3,6 +3,7 @@ name: Update Bing Wallpapers
 on:
   schedule:
     - cron: "0 * * * *" # 每小时运行一次，您可以根据需要调整此值
+  workflow_dispatch:
 
 jobs:
   update_wallpapers:
