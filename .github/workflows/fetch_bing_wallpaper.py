@@ -50,56 +50,52 @@ def update_readme(wallpapers):
     if not new_wallpapers:
         return
 
+    new_wallpapers.sort(key=lambda x: x[1], reverse=True)
+
     for image_url, image_date, image_caption, image_title in new_wallpapers:
         save_image(image_url, image_date, image_title)
-        header = table.th
-        if header:
-            prev_image = header.img.extract()
-            prev_caption = header.p.extract()
-            header.clear()
-        else:
-            header = soup.new_tag("th", colspan="3")
-            first_row = soup.new_tag("tr")
-            first_row.append(header)
-            table.insert(0, first_row)
+
+    header = table.th
+    if header:
+        header.img.decompose()
+        header.p.decompose()
+    else:
+        header = soup.new_tag("th", colspan="3")
+        first_row = soup.new_tag("tr")
+        first_row.append(header)
+        table.insert(0, first_row)
+
+    latest_image_url, latest_image_date, latest_image_caption, _ = new_wallpapers[0]
+    new_image = soup.new_tag("img", src=latest_image_url, width="100%")
+    header.append(new_image)
+    header_caption = soup.new_tag("p")
+    header_caption.string = f"{latest_image_date} - {latest_image_caption}"
+    header.append(header_caption)
+
+    cells = table.find_all("td")
+    num_cells = len(cells)
+
+    if num_cells < 30:
+        if num_cells == 0:
+            new_row = soup.new_tag("tr")
+            for _ in range(3):
+                new_cell = soup.new_tag("td")
+                new_row.append(new_cell)
+            table.append(new_row)
+            cells = table.find_all("td")
+
+    for i, (image_url, image_date, image_caption, _) in enumerate(new_wallpapers[1:]):
+        if i >= num_cells:
+            break
+
+        cell = cells[i]
+        cell.clear()
 
         new_image = soup.new_tag("img", src=image_url, width="100%")
-        header.append(new_image)
-        header_caption = soup.new_tag("p")
-        header_caption.string = f"{image_date} - {image_caption}"
-        header.append(header_caption)
-
-        cells = table.find_all("td")
-        num_cells = len(cells)
-
-        if num_cells < 30:
-            if num_cells == 0:
-                new_row = soup.new_tag("tr")
-                for _ in range(3):
-                    new_cell = soup.new_tag("td")
-                    new_row.append(new_cell)
-                table.append(new_row)
-                cells = table.find_all("td")
-
-            for i in range(num_cells - 1, 0, -1):
-                if cells[i - 1].img:
-                    cells[i].clear()
-                    cells[i].append(cells[i - 1].img.extract())
-                    cells[i].append(cells[i - 1].p.extract())
-
-            cells[0].clear()
-            cells[0].append(prev_image)
-            cells[0].append(prev_caption)
-        else:
-            for i in range(29, 0, -1):
-                if cells[i - 1].img:
-                    cells[i].clear()
-                    cells[i].append(cells[i - 1].img.extract())
-                    cells[i].append(cells[i - 1].p.extract())
-
-            cells[0].clear()
-            cells[0].append(prev_image)
-            cells[0].append(prev_caption)
+        cell.append(new_image)
+        cell_caption = soup.new_tag("p")
+        cell_caption.string = f"{image_date} - {image_caption}"
+        cell.append(cell_caption)
 
     with open("README.md", "w") as f:
         f.write(str(soup))
