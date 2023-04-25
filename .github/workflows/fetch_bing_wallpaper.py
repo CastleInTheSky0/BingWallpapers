@@ -56,8 +56,10 @@ def update_readme(wallpapers):
     header = table.th
 
     if header:
-        current_header_date = header.p.string.split(" - ")[0]
-        if latest_image_date <= current_header_date:
+        current_header_date = datetime.strptime(header.p.string.split(" - ")[0], "%Y%m%d")
+        latest_image_datetime = datetime.strptime(latest_image_date, "%Y%m%d")
+
+        if latest_image_datetime <= current_header_date:
             return
 
         header.img.decompose()
@@ -75,25 +77,25 @@ def update_readme(wallpapers):
     header_caption.string = f"{latest_image_date} - {latest_image_caption}"
     header.append(header_caption)
 
-    cells = table.find_all("td")
-    num_cells = len(cells)
+    num_rows = (len(new_wallpapers) - 1) // 3
+    if (len(new_wallpapers) - 1) % 3 != 0:
+        num_rows += 1
 
-    if num_cells < 30:
-        if num_cells == 0:
-            new_row = soup.new_tag("tr")
-            for _ in range(3):
-                new_cell = soup.new_tag("td")
-                new_row.append(new_cell)
-            table.append(new_row)
-            cells = table.find_all("td")
+    for _ in range(num_rows):
+        new_row = soup.new_tag("tr")
+        for _ in range(3):
+            new_cell = soup.new_tag("td")
+            new_row.append(new_cell)
+        table.append(new_row)
+
+    cells = table.find_all("td")
 
     for i, (image_url, image_date, _, image_caption, image_title) in enumerate(new_wallpapers[1:]):
-        if i >= num_cells:
+        if i >= len(cells):
             break
 
         cell = cells[i]
         cell.clear()
-
         save_image(image_url, image_date, image_title)
         new_image = soup.new_tag("img", src=image_url, width="100%")
         cell.append(new_image)
