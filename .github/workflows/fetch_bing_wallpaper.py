@@ -14,10 +14,11 @@ def fetch_bing_wallpapers():
     for image in data["images"]:
         image_url = BASE_URL + image["url"]
         image_date = image["enddate"]
+        image_startdate = image["startdate"]
         image_caption = image["copyright"]
         image_title = image["title"]
-        wallpapers.append((image_url, image_date, image_caption, image_title))
-    
+        wallpapers.append((image_url, image_date, image_startdate, image_caption, image_title))
+
     return wallpapers
 
 def save_image(image_url, image_date, image_title):
@@ -45,14 +46,15 @@ def update_readme(wallpapers):
 
     existing_images = [img["src"] for img in table.find_all("img")]
 
-    new_wallpapers = [wp for wp in wallpapers if wp[0] not in existing_images]
+    new_wallpapers = sorted([wp for wp in wallpapers if wp[0] not in existing_images], key=lambda x: x[1], reverse=True)
 
     if not new_wallpapers:
         return
 
-    new_wallpapers.sort(key=lambda x: x[1], reverse=True)
+    latest_image_url, latest_image_date, _, latest_image_caption, latest_image_title = new_wallpapers[0]
+    save_image(latest_image_url, latest_image_date, latest_image_title)
 
-    for image_url, image_date, image_caption, image_title in new_wallpapers:
+    for image_url, image_date, _, image_caption, image_title in new_wallpapers[1:]:
         save_image(image_url, image_date, image_title)
 
     header = table.th
@@ -65,7 +67,7 @@ def update_readme(wallpapers):
         first_row.append(header)
         table.insert(0, first_row)
 
-    latest_image_url, latest_image_date, latest_image_caption, _ = new_wallpapers[0]
+    latest_image_url, latest_image_date, latest_image_startdate, latest_image_caption, _ = new_wallpapers[0]
     new_image = soup.new_tag("img", src=latest_image_url, width="100%")
     header.append(new_image)
     header_caption = soup.new_tag("p")
