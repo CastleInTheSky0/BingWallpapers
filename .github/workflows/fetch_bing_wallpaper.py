@@ -72,9 +72,10 @@ def update_readme(wallpapers):
             prev_image = cells[-1].img.extract() if cells and cells[-1].img else None
             prev_caption = cells[-1].p.extract() if cells and cells[-1].p else None
             for i in range(num_cells - 1, 0, -1):
-                curr_image = cells[i - 1].img.extract()
+                curr_image = cells[i - 1].img.extract() if cells[i - 1].img else None
                 curr_caption = cells[i - 1].p.extract() if cells[i - 1].p else None
-                cells[i].append(curr_image)
+                if curr_image is not None:
+                    cells[i].append(curr_image)
                 if curr_caption is not None:
                     cells[i].append(curr_caption)
             if cells:
@@ -88,12 +89,13 @@ def update_readme(wallpapers):
                     new_row.append(new_cell)
                 table.append(new_row)
         else:
-            cells[29].img.extract()
+            cells[29].img.extract() if cells[29].img else None
             cells[29].p.extract() if cells[29].p else None
             for i in range(29, 0, -1):
-                curr_image = cells[i - 1].img.extract()
+                curr_image = cells[i - 1].img.extract() if cells[i - 1].img else None
                 curr_caption = cells[i - 1].p.extract() if cells[i - 1].p else None
-                cells[i].append(curr_image)
+                if curr_image is not None:
+                    cells[i].append(curr_image)
                 if curr_caption is not None:
                     cells[i].append(curr_caption)
 
