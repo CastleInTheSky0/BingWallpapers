@@ -22,15 +22,20 @@ def fetch_bing_wallpapers():
     return wallpapers
 
 def save_image(image_url, image_date, image_title):
-    response = requests.get(image_url)
-    image_data = response.content
-
     year_month = image_date[:6]
     if not os.path.exists(f"old_wallpapers/{year_month}"):
         os.makedirs(f"old_wallpapers/{year_month}")
 
     image_name = image_title.replace(" ", "_")
-    with open(f"old_wallpapers/{year_month}/{image_name}.jpg", "wb") as f:
+    image_path = f"old_wallpapers/{year_month}/{image_name}.jpg"
+
+    if os.path.exists(image_path):
+        return
+
+    response = requests.get(image_url)
+    image_data = response.content
+
+    with open(image_path, "wb") as f:
         f.write(image_data)
 
 def update_readme(wallpapers):
