@@ -66,24 +66,36 @@ def update_readme(wallpapers):
         header.append(header_caption)
 
         cells = table.find_all("td")
-        if cells:
-            prev_image = cells[-1].img.extract()
-            prev_caption = cells[-1].p.extract() if cells[-1].p else None
-            for i in range(len(cells) - 1, 0, -1):
+        num_cells = len(cells)
+        
+        if num_cells < 30:
+            prev_image = cells[-1].img.extract() if cells else None
+            prev_caption = cells[-1].p.extract() if cells and cells[-1].p else None
+            for i in range(num_cells - 1, 0, -1):
                 curr_image = cells[i - 1].img.extract()
                 curr_caption = cells[i - 1].p.extract() if cells[i - 1].p else None
                 cells[i].append(curr_image)
                 if curr_caption is not None:
                     cells[i].append(curr_caption)
-            cells[0].insert(0, prev_image)
-            if prev_caption is not None:
-                cells[0].insert(1, prev_caption)
+            if cells:
+                cells[0].insert(0, prev_image)
+                if prev_caption is not None:
+                    cells[0].insert(1, prev_caption)
+            else:
+                new_row = soup.new_tag("tr")
+                for _ in range(3):
+                    new_cell = soup.new_tag("td")
+                    new_row.append(new_cell)
+                table.append(new_row)
         else:
-            new_row = soup.new_tag("tr")
-            for _ in range(3):
-                new_cell = soup.new_tag("td")
-                new_row.append(new_cell)
-            table.append(new_row)
+            cells[29].img.extract()
+            cells[29].p.extract() if cells[29].p else None
+            for i in range(29, 0, -1):
+                curr_image = cells[i - 1].img.extract()
+                curr_caption = cells[i - 1].p.extract() if cells[i - 1].p else None
+                cells[i].append(curr_image)
+                if curr_caption is not None:
+                    cells[i].append(curr_caption)
 
     with open("README.md", "w") as f:
         f.write(str(soup))
