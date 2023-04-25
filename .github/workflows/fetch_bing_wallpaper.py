@@ -69,7 +69,7 @@ def update_readme(wallpapers):
         num_cells = len(cells)
         
         if num_cells < 30:
-            prev_image = cells[-1].img.extract() if cells else None
+            prev_image = cells[-1].img.extract() if cells and cells[-1].img else None
             prev_caption = cells[-1].p.extract() if cells and cells[-1].p else None
             for i in range(num_cells - 1, 0, -1):
                 curr_image = cells[i - 1].img.extract()
