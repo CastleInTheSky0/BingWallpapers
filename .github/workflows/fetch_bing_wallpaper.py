@@ -71,7 +71,7 @@ def update_readme(wallpapers):
             prev_caption = cells[-1].p.extract() if cells[-1].p else None
             for i in range(len(cells) - 1, 0, -1):
                 curr_image = cells[i - 1].img.extract()
-                curr_caption = cells[i - 1].p.extract()
+                curr_caption = cells[i - 1].p.extract() if cells[i - 1].p else None
                 cells[i].append(curr_image)
                 cells[i].append(curr_caption)
             cells[0].insert(0, prev_image)
