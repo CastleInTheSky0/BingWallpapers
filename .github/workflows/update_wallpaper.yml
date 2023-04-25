@@ -2,7 +2,7 @@ name: Bing Wallpaper
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # 每1小时运行一次
+    - cron: '0 */2 * * *'
   workflow_dispatch:
 
 jobs:
