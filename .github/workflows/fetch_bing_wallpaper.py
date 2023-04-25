@@ -49,7 +49,8 @@ def update_readme(wallpapers):
     if not new_wallpapers:
         return
 
-    for image_url, image_date, image_caption in new_wallpapers[::-1]:
+    for image_url, image_date, image_caption, image_title in new_wallpapers[::-1]:
+        save_image(image_url, image_date, image_title)
         header = table.th
         if not header:
             header = soup.new_tag("th", colspan="3")
