@@ -79,7 +79,8 @@ def update_readme(wallpapers):
                 if curr_caption is not None:
                     cells[i].append(curr_caption)
             if cells:
-                cells[0].insert(0, prev_image)
+                if prev_image is not None:
+                    cells[0].insert(0, prev_image)
                 if prev_caption is not None:
                     cells[0].insert(1, prev_caption)
             else:
