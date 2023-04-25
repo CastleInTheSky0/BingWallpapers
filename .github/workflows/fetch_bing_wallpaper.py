@@ -47,7 +47,7 @@ def update_readme(wallpapers):
     existing_images = [img["src"] for img in table.find_all("img")]
 
     new_wallpapers = sorted([wp for wp in wallpapers if wp[0] not in existing_images], key=lambda x: x[1], reverse=True)
-
+    print(new_wallpapers)
     if not new_wallpapers:
         return
 
@@ -102,7 +102,7 @@ def update_readme(wallpapers):
         cell_caption = soup.new_tag("p")
         cell_caption.string = f"{image_date} - {image_caption}"
         cell.append(cell_caption)
-
+    print(soup)
     with open("README.md", "w") as f:
         f.write(str(soup))
 
