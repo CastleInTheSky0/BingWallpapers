@@ -12,9 +12,10 @@ def fetch_bing_wallpaper():
     image_url = BASE_URL + data["images"][0]["url"]
     image_date = data["images"][0]["enddate"]
     image_caption = data["images"][0]["copyright"]
-    return image_url, image_date, image_caption
+    image_title = data["images"][0]["title"].replace(" ", "_")
+    return image_url, image_date, image_caption, image_title
 
-def update_readme(image_url, image_date, image_caption):
+def update_readme(image_url, image_date, image_caption, image_title):
     with open("README.md", "r") as f:
         content = f.read()
 
@@ -61,17 +62,19 @@ def update_readme(image_url, image_date, image_caption):
             new_row.append(new_cell)
         table.append(new_row)
 
-    if len(cells) >= 30:
-        last_image = cells[-1].img.extract()
-        last_caption = cells[-1].p.extract()
-        last_image_date = last_image["src"].split("/")[-1].split("_")[0]
-        if not os.path.exists(f"old_wallpapers/{last_image_date}"):
-            os.makedirs(f"old_wallpapers/{last_image_date}")
-        os.rename(last_image["src"], f"old_wallpapers/{last_image_date}/{last_image_date}.jpg")
+    image_file_path = os.path.join("old_wallpapers", image_date, f"{image_title}.jpg")
+    os.makedirs(os.path.dirname(image_file_path), exist_ok=True)
+
+    if not os.path.exists(image_file_path):
+        with requests.get(image_url, stream=True) as r:
+            r.raise_for_status()
+            with open(image_file_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
 
     with open("README.md", "w") as f:
         f.write(str(soup))
 
 if __name__ == "__main__":
-    image_url, image_date, image_caption = fetch_bing_wallpaper()
-    update_readme(image_url, image_date, image_caption)
+    image_url, image_date, image_caption, image_title = fetch_bing_wallpaper()
+    update_readme(image_url, image_date, image_caption, image_title)
