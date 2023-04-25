@@ -73,9 +73,11 @@ def update_readme(wallpapers):
                 curr_image = cells[i - 1].img.extract()
                 curr_caption = cells[i - 1].p.extract() if cells[i - 1].p else None
                 cells[i].append(curr_image)
-                cells[i].append(curr_caption)
+                if curr_caption is not None:
+                    cells[i].append(curr_caption)
             cells[0].insert(0, prev_image)
-            cells[0].insert(1, prev_caption)
+            if prev_caption is not None:
+                cells[0].insert(1, prev_caption)
         else:
             new_row = soup.new_tag("tr")
             for _ in range(3):
