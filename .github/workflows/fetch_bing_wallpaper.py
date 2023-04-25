@@ -41,6 +41,7 @@ def update_readme(wallpapers):
 
     if not table:
         table = soup.new_tag("table")
+        soup.append(table)
 
     existing_images = [img["src"] for img in table.find_all("img")]
 
@@ -52,14 +53,17 @@ def update_readme(wallpapers):
     for image_url, image_date, image_caption, image_title in new_wallpapers[::-1]:
         save_image(image_url, image_date, image_title)
         header = table.th
-        if not header:
+        if header:
+            prev_image = header.img.extract()
+            prev_caption = header.p.extract()
+            header.clear()
+        else:
             header = soup.new_tag("th", colspan="3")
             first_row = soup.new_tag("tr")
             first_row.append(header)
             table.insert(0, first_row)
 
         new_image = soup.new_tag("img", src=image_url, width="100%")
-        header.clear()
         header.append(new_image)
         header_caption = soup.new_tag("p")
         header_caption.string = f"{image_date} - {image_caption}"
@@ -67,38 +71,35 @@ def update_readme(wallpapers):
 
         cells = table.find_all("td")
         num_cells = len(cells)
-        
+
         if num_cells < 30:
-            prev_image = cells[-1].img.extract() if cells and cells[-1].img else None
-            prev_caption = cells[-1].p.extract() if cells and cells[-1].p else None
-            for i in range(num_cells - 1, 0, -1):
-                curr_image = cells[i - 1].img.extract() if cells[i - 1].img else None
-                curr_caption = cells[i - 1].p.extract() if cells[i - 1].p else None
-                if curr_image is not None:
-                    cells[i].append(curr_image)
-                if curr_caption is not None:
-                    cells[i].append(curr_caption)
-            if cells:
-                if prev_image is not None:
-                    cells[0].insert(0, prev_image)
-                if prev_caption is not None:
-                    cells[0].insert(1, prev_caption)
-            else:
+            if num_cells == 0:
                 new_row = soup.new_tag("tr")
                 for _ in range(3):
                     new_cell = soup.new_tag("td")
                     new_row.append(new_cell)
                 table.append(new_row)
+                cells = table.find_all("td")
+
+            for i in range(num_cells - 1, 0, -1):
+                if cells[i - 1].img:
+                    cells[i].clear()
+                    cells[i].append(cells[i - 1].img.extract())
+                    cells[i].append(cells[i - 1].p.extract())
+
+            cells[0].clear()
+            cells[0].append(prev_image)
+            cells[0].append(prev_caption)
         else:
-            cells[29].img.extract() if cells[29].img else None
-            cells[29].p.extract() if cells[29].p else None
             for i in range(29, 0, -1):
-                curr_image = cells[i - 1].img.extract() if cells[i - 1].img else None
-                curr_caption = cells[i - 1].p.extract() if cells[i - 1].p else None
-                if curr_image is not None:
-                    cells[i].append(curr_image)
-                if curr_caption is not None:
-                    cells[i].append(curr_caption)
+                if cells[i - 1].img:
+                    cells[i].clear()
+                    cells[i].append(cells[i - 1].img.extract())
+                    cells[i].append(cells[i - 1].p.extract())
+
+            cells[0].clear()
+            cells[0].append(prev_image)
+            cells[0].append(prev_caption)
 
     with open("README.md", "w") as f:
         f.write(str(soup))
