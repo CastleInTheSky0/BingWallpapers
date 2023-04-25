@@ -67,7 +67,7 @@ def update_readme(wallpapers):
         first_row.append(header)
         table.insert(0, first_row)
 
-    latest_image_url, latest_image_date, latest_image_startdate, latest_image_caption, _ = new_wallpapers[0]
+    latest_image_url, latest_image_date, _, latest_image_caption, _ = new_wallpapers[0]
     new_image = soup.new_tag("img", src=latest_image_url, width="100%")
     header.append(new_image)
     header_caption = soup.new_tag("p")
@@ -86,7 +86,7 @@ def update_readme(wallpapers):
             table.append(new_row)
             cells = table.find_all("td")
 
-    for i, (image_url, image_date, image_caption, _) in enumerate(new_wallpapers[1:]):
+    for i, (image_url, image_date, _, image_caption, _) in enumerate(new_wallpapers[1:]):
         if i >= num_cells:
             break
 
