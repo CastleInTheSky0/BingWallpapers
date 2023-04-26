@@ -61,7 +61,8 @@ def update_readme(wallpapers):
     header = table.th
 
     if header:
-        current_header_date = datetime.strptime(header.p.string.split(" - ")[0], "%Y%m%d")
+        # 去除可能存在的换行和空格
+        current_header_date = datetime.strptime(header.p.string.split(" - ")[0].strip(), "%Y%m%d")
         latest_image_datetime = datetime.strptime(latest_image_date, "%Y%m%d")
 
         if latest_image_datetime <= current_header_date:
