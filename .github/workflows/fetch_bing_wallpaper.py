@@ -68,6 +68,10 @@ def update_readme(wallpapers):
         if latest_image_datetime <= current_header_date:
             return
 
+        # 保存原表头壁纸信息
+        old_header_image_url = header.img["src"]
+        old_header_caption = header.p.string
+
         header.img.decompose()
         header.p.decompose()
     else:
@@ -83,16 +87,9 @@ def update_readme(wallpapers):
     header_caption.string = f"{latest_image_date} - {latest_image_caption}"
     header.append(header_caption)
 
-    num_rows = (len(new_wallpapers) - 1) // 3
-    if (len(new_wallpapers) - 1) % 3 != 0:
-        num_rows += 1
-
-    for _ in range(num_rows):
-        new_row = soup.new_tag("tr")
-        for _ in range(3):
-            new_cell = soup.new_tag("td")
-            new_row.append(new_cell)
-        table.append(new_row)
+    # 将原表头壁纸插入新壁纸列表的第一个位置
+    old_header_date = current_header_date.strftime("%Y%m%d")
+    new_wallpapers.insert(1, (old_header_image_url, old_header_date, None, old_header_caption, None))
 
     cells = table.find_all("td")
 
@@ -108,7 +105,28 @@ def update_readme(wallpapers):
         cell_caption = soup.new_tag("p")
         cell_caption.string = f"{image_date} - {image_caption}"
         cell.append(cell_caption)
-    print(soup)
+
+    # 计算所需的行数
+    num_rows = (len(new_wallpapers) - 1) // 3
+    if (len(new_wallpapers) - 1) % 3 != 0:
+        num_rows += 1
+
+    # 保留最多 10 行（30 个单元格）
+    num_rows = min(num_rows, 10)
+
+    # 添加或删除行以匹配所需的行数
+    rows = table.find_all("tr")[1:]
+    while len(rows) < num_rows:
+        new_row = soup.new_tag("tr")
+        for _ in range(3):
+            new_cell = soup.new_tag("td")
+            new_row.append(new_cell)
+        table.append(new_row)
+        rows.append(new_row)
+    while len(rows) > num_rows:
+        rows[-1].decompose()
+        rows.pop()
+
     with open("README.md", "w") as f:
         f.write(str(soup))
 
