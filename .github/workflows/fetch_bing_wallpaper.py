@@ -126,8 +126,7 @@ def update_readme(wallpapers):
                 image_url, image_date, image_caption, image_title = all_wallpapers[index]
                 cell.clear()
                 save_image(image_url, image_date, image_title)
-                new_image = soup.new_tag("img", src=image_url, alt=image_title, height="180px")
-                cell["style"] = "vertical-align: top;"
+                new_image = soup.new_tag("img", src=image_url, alt=image_title, width="100%")
                 cell.append(new_image)
                 cell_caption = soup.new_tag("p")
                 cell_caption.string = f"{image_date} - {image_caption}"
