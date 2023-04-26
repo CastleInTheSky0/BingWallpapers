@@ -117,6 +117,9 @@ def update_readme(wallpapers):
     all_wallpapers.sort(key=lambda x: x[1], reverse=True)
     
     for i, row in enumerate(table.find_all("tr")[1:]):
+        if i * 3 + 1 > 30:
+            row.decompose()
+            continue
         for j, cell in enumerate(row.find_all("td")):
             index = i * 3 + j + 1
             if index < len(all_wallpapers):
@@ -124,6 +127,7 @@ def update_readme(wallpapers):
                 cell.clear()
                 save_image(image_url, image_date, image_title)
                 new_image = soup.new_tag("img", src=image_url, alt=image_title, height="180px")
+                cell["style"] = "vertical-align: top;"
                 cell.append(new_image)
                 cell_caption = soup.new_tag("p")
                 cell_caption.string = f"{image_date} - {image_caption}"
