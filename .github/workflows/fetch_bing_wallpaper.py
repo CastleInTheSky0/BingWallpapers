@@ -7,13 +7,7 @@ URL = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8&mkt=en-US"
 BASE_URL = "https://www.bing.com"
 
 def fetch_bing_wallpapers():
-    # 使用127.0.0.1:10809代理请求数据
-    proxies = {
-        "http": "http://127.0.0.1:10809",
-        "https": "http://127.0.0.1:10809"
-    }
-
-    response = requests.get(URL, proxies=proxies)
+    response = requests.get(URL)
     data = response.json()
     wallpapers = []
     for image in data["images"]:
