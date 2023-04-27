@@ -102,19 +102,36 @@ def update_readme(wallpapers):
 
     seen = set()
     all_wallpapers = []
-
-    for wp in old_wallpapers + new_wallpapers:
-        if wp[0] not in seen:
-            all_wallpapers.append(wp)
-            seen.add(wp[0])
+    if not old_wallpapers:
+        all_wallpapers = new_wallpapers
+    else:
+        for wp in old_wallpapers + new_wallpapers:
+            if wp[0] not in seen:
+                all_wallpapers.append(wp)
+                seen.add(wp[0])
 
     all_wallpapers.sort(key=lambda x: x[1], reverse=True)
-    
-    for i, row in enumerate(table.find_all("tr")[1:]):
+
+    for i in range((len(all_wallpapers) + 2) // 3):
+        if i < len(table.find_all("tr")[1:]):
+            row = table.find_all("tr")[1:][i]
+        else:
+            row = soup.new_tag("tr")
+            # 创建3个<td>标签并将它们添加到新行中
+            for _ in range(3):
+                td = soup.new_tag("td")
+                row.append(td)
+            table.append(row)
+
         if i * 3 + 1 > 30:
             row.decompose()
             continue
-        for j, cell in enumerate(row.find_all("td")):
+        for j in range(3):
+            if j < len(row.find_all("td")):
+                cell = row.find_all("td")[j]
+            else:
+                cell = soup.new_tag("td")
+                row.append(cell)
             index = i * 3 + j + 1
             if index < len(all_wallpapers):
                 image_url, image_date, image_caption, image_title = all_wallpapers[index]
