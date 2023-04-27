@@ -25,7 +25,7 @@ def save_image(image_url, image_date, image_title):
         os.makedirs(f"old_wallpapers/{year_month}")
 
     image_name = image_title.replace(" ", "_")
-    image_path = f"old_wallpapers/{year_month}/{image_name}.jpg"
+    image_path = f"old_wallpapers/{year_month}/{image_date}_{image_name}.jpg"
 
     if os.path.exists(image_path):
         print("壁纸已存在！")
