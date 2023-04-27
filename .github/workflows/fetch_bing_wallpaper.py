@@ -11,7 +11,10 @@ def fetch_bing_wallpapers():
     data = response.json()
     wallpapers = []
     for image in data["images"]:
-        image_url = BASE_URL + image["url"]
+        # 4k壁纸
+        image_url = BASE_URL + image["urlbase"] + "_UHD.jpg&rf=LaDigue_UHD.jpg&pid=hp&w=3840&h=2160&rs=1&c=4"
+        # 1080p壁纸
+        # image_url = BASE_URL + image["url"]
         image_date = image["enddate"]
         image_caption = image["copyright"]
         image_title = image["title"]
