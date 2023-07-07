@@ -31,7 +31,7 @@ def save_image(image_url, image_date, image_title):
     image_path = f"old_wallpapers/{year_month}/{image_date}_{image_name}.jpg"
 
     if os.path.exists(image_path):
-        print(f"壁纸已存在！日期：{image_date}")
+        # print(f"壁纸已存在！日期：{image_date}")
         return
 
     response = requests.get(image_url)
