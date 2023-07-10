@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -27,7 +28,8 @@ def save_image(image_url, image_date, image_title):
     if not os.path.exists(f"old_wallpapers/{year_month}"):
         os.makedirs(f"old_wallpapers/{year_month}")
 
-    image_name = image_title.replace(" ", "_")
+    image_name = re.sub('[<>:"/\\\\|?*]', '', image_title)
+    image_name = image_name.replace(" ", "_")
     image_path = f"old_wallpapers/{year_month}/{image_date}_{image_name}.jpg"
 
     if os.path.exists(image_path):
