@@ -31,17 +31,12 @@ jobs:
 
       - name: Commit and push changes
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "$SSH_PRIVATE_KEY" > private_key.pem
-          chmod 600 private_key.pem
-          eval "$(ssh-agent -s)"
-          ssh-add private_key.pem
-          git config --global user.name "linmew"
-          git config --global user.email "jzgflm@gmail.com"
-          git remote set-url origin git@github.com:linmew/bingWallpapers.git
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
           git add README.md
           git add old_wallpapers
           git diff-index --quiet HEAD || git commit -m "Update Bing Wallpapers"
           git push
-          rm -f private_key.pem
